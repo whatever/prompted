@@ -17,13 +17,12 @@ var static embed.FS
 
 // PromptResponse is a prompt -> response pair with some things to coordinate multiple participants.
 type PromptResponseTracker struct {
-	Prompt        string     `json:"prompt"`
-	Response      string     `json:"response"`
-	Secret        string     `json:"-"`
-	Waiting       bool       `json:"waiting"`
-	LastTouched   time.Time  `json:"-"`
-	LastHeartbeat time.Time  `json:"-"`
-	mutex         sync.Mutex `json:"-"`
+	Prompt      string     `json:"prompt"`
+	Response    string     `json:"response"`
+	Secret      string     `json:"-"`
+	Waiting     bool       `json:"waiting"`
+	LastTouched time.Time  `json:"-"`
+	mutex       sync.Mutex `json:"-"`
 }
 
 // PromptResponseMessage is a response type which is probably redundant with the above

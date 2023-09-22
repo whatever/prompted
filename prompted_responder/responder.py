@@ -10,6 +10,8 @@ import time
 
 
 def signal_handler(sig, frame):
+    """Exit program successfully"""
+    logging.info("exiting"
     sys.exit(0)
 
 
@@ -31,6 +33,8 @@ if __name__ == "__main__":
 
         time.sleep(1)
 
+        # Fetch status and determine whether we should ignore the response
+
         resp = requests.get(URLS["status"]).json()
 
         if "error" in resp:
@@ -40,6 +44,8 @@ if __name__ == "__main__":
         if resp.get("response"):
             logging.warn("Response was non-empty, so no need to compute a response")
             continue
+
+        # Compute response for the prompt and send it up
 
         d = {
             "secret": args.secret,
