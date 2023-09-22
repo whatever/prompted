@@ -106,6 +106,7 @@ func NewMux() (*http.ServeMux, error) {
 			}
 			tracker.LastTouched = now
 			tracker.Prompt = req.Form.Get("prompt")
+			tracker.Response = ""
 		}
 
 		encoded, err := json.Marshal(resp)
