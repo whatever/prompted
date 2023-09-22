@@ -48,7 +48,8 @@
         }).catch(function(e) {
           console.log("nah:", e);
         }).then(function (v) {
-          console.log("success:", v);
+          console.log(v);
+          document.getElementById("results").value = v.response;
         });
       }
 
