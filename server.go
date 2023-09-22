@@ -3,6 +3,8 @@ package main
 import (
 	"embed"
 	"encoding/json"
+	"flag"
+	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
@@ -175,10 +177,14 @@ func NewMux() (*http.ServeMux, error) {
 	return mux, nil
 }
 
+var port = flag.Int("port", 8182, "set port to listen on")
+
 func main() {
 	mux, _ := NewMux()
 
-	log.Println("Listening on port 8181")
+	flag.Parse()
 
-	log.Fatal(http.ListenAndServe(":8181", mux))
+	log.Printf("Listening on port %d", *port)
+
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), mux))
 }
