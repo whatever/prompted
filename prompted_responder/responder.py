@@ -103,8 +103,6 @@ if __name__ == "__main__":
 
         resp = requests.get(URLS["status"]).json()
 
-        print("state:", resp.get("state"))
-
         if resp.get("state") != "waiting":
             logging.info("server is not waiting, so skipping")
             continue
@@ -127,15 +125,17 @@ if __name__ == "__main__":
             "working",
         )
 
-        print(respond(
-            URLS["respond"],
-            args.secret,
-            resp["prompt"],
-            predict(resp["prompt"].strip()),
-        ).json())
+        response = predict(resp["prompt"].strip())
 
         heartbeat(
             URLS["heartbeat"],
             args.secret,
             "ready",
         )
+
+        respond(
+            URLS["respond"],
+            args.secret,
+            resp["prompt"],
+            response,
+        ).json()
