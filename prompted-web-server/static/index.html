@@ -9,14 +9,19 @@
     }
 
     #what-are-we-doing-rn {
-      float: left;
       display: block;
       margin-right: 2em;
     }
 
     #container {
+      display: block;
       margin: 0 auto;
+      width: 50%;
     }
+
+    textarea {
+    }
+
     </style>
 
     <script>
@@ -53,6 +58,7 @@
           }
 
           document.getElementById("results").value = v.response;
+          document.getElementById("state").value = v.state;
         });
       }
 
@@ -65,11 +71,12 @@
   </head>
   <body>
     <div id="container">
-      <div id="what-are-we-doing-rn">
-        <textarea cols=80 rows=20 placeholder="enter some text" id="prompt"></textarea>
-        <br>
-        <input type="submit" id="head-like-a-hole"></input>
-      </div>
+      state: <input id="state">
+      <br>
+      <textarea cols=80 rows=20 placeholder="enter some text" id="prompt"></textarea>
+      <br>
+      <input type="submit" id="head-like-a-hole"></input>
+      <br>
       <textarea cols=80 rows=80 id="results"></textarea>
     </div>
   </body>
