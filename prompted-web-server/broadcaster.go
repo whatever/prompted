@@ -7,9 +7,14 @@ import (
 	"golang.org/x/net/websocket"
 )
 
+const (
+	ReadBuffserSize int = 1024
+)
+
 // Broadcaster that is a hub for all connections
 type Broadcaster struct {
 	Connections map[*websocket.Conn]bool
+	events      chan []byte
 	mutex       sync.RWMutex
 }
 
@@ -17,6 +22,8 @@ type Broadcaster struct {
 func NewBroadcaster() *Broadcaster {
 	return &Broadcaster{
 		Connections: make(map[*websocket.Conn]bool),
+		events:      make(chan []byte, 100),
+		mutex:       sync.RWMutex{},
 	}
 }
 
@@ -31,6 +38,21 @@ func (caster *Broadcaster) Add(conn *websocket.Conn) error {
 	caster.Connections[conn] = true
 	caster.mutex.Unlock()
 
+	go func() {
+
+		var n int
+		var err error = nil
+		var message []byte
+
+		for err == nil {
+			err = websocket.Message.Receive(conn, &message)
+			fmt.Println("<<<")
+			caster.events <- message[:n]
+			fmt.Println(">>>")
+			fmt.Println("~~~", n, err, message)
+		}
+	}()
+
 	return nil
 }
 
@@ -40,7 +62,7 @@ func (caster *Broadcaster) Broadcast(msg []byte) error {
 	defer caster.mutex.Unlock()
 
 	for conn := range caster.Connections {
-		conn.Write(msg)
+		websocket.Message.Send(conn, msg)
 	}
 
 	return nil
@@ -57,6 +79,6 @@ func (caster *Broadcaster) Close(conn *websocket.Conn) error {
 	return nil
 }
 
-func (caster *Broadcaster) Events() chan<- []byte {
+func (caster *Broadcaster) Events() <-chan []byte {
 	return nil
 }
