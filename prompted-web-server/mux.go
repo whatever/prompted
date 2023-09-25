@@ -10,6 +10,16 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// SendStatusUpdate sends a status update to all connected websockets
+func SendStatusUpdate(caster *Broadcaster, tracker *PromptResponseTracker) {
+	encoded, err := json.Marshal(tracker.StatusMessage())
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	caster.Broadcast(encoded)
+}
+
 // NewMux returns a new set of routes
 func NewMux() (*http.ServeMux, error) {
 
@@ -22,6 +32,8 @@ func NewMux() (*http.ServeMux, error) {
 	tracker := NewPromptResponseTracker()
 
 	log.Printf("Initialized with secret %v", tracker.Secret)
+
+	caster := NewBroadcaster()
 
 	mux := http.NewServeMux()
 
@@ -83,6 +95,8 @@ func NewMux() (*http.ServeMux, error) {
 		}
 
 		w.Write(encoded)
+
+		SendStatusUpdate(caster, tracker)
 
 	})
 
@@ -172,9 +186,9 @@ func NewMux() (*http.ServeMux, error) {
 			State:    tracker.State,
 			Error:    "",
 		})
-	})
 
-	caster := NewBroadcaster()
+		SendStatusUpdate(caster, tracker)
+	})
 
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
