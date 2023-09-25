@@ -73,8 +73,10 @@
           console.log("open:", event);
         });
 
-        websocket.addEventListener("message", function (event) {
-          console.error("NEED TO IMPLEMENT THIS");
+        websocket.addEventListener("message", function (ev) {
+          var message = JSON.parse(ev.data);
+          document.getElementById("results").value = message.response;
+          document.getElementById("state").value = message.state;
         });
 
         websocket.addEventListener("close", function (event) {

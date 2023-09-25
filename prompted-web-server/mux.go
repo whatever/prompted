@@ -158,7 +158,6 @@ func NewMux() (*http.ServeMux, error) {
 			errmsg = "request is not sending the correct secret"
 
 		default:
-			log.Println("!???!")
 			tracker.Response = req.Form.Get("response")
 			tracker.LastTouched = now
 		}
