@@ -25,6 +25,7 @@
     </style>
 
     <script>
+
       function prompt() {
 
         var data = new URLSearchParams();
@@ -66,8 +67,11 @@
         document.getElementById("head-like-a-hole").addEventListener("click", prompt);
         setInterval(status, 1000);
 
+        var protocol = location.protocol == "https:" ? "wss:" : "ws:";
+        var host = location.host;
+        var path = "/ws";
 
-        var websocket = new WebSocket("ws://localhost:8182/ws");
+        var websocket = new WebSocket(protocol + "//" + host + path);
 
         websocket.addEventListener("open", function (event) {
           console.log("open:", event);
