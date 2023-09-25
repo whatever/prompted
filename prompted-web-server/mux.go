@@ -86,8 +86,6 @@ func NewMux() (*http.ServeMux, error) {
 			tracker.Response = ""
 		}
 
-		log.Println("!!!!")
-
 		encoded, err := json.Marshal(resp)
 
 		if err != nil {
@@ -95,9 +93,7 @@ func NewMux() (*http.ServeMux, error) {
 		}
 
 		w.Write(encoded)
-
 		SendStatusUpdate(caster, tracker)
-
 	})
 
 	mux.HandleFunc("/heartbeat", func(w http.ResponseWriter, req *http.Request) {
@@ -180,6 +176,7 @@ func NewMux() (*http.ServeMux, error) {
 	mux.HandleFunc("/status", func(w http.ResponseWriter, req *http.Request) {
 		tracker.mutex.Lock()
 		defer tracker.mutex.Unlock()
+
 		json.NewEncoder(w).Encode(PromptResponseMessage{
 			Prompt:   tracker.Prompt,
 			Response: tracker.Response,
