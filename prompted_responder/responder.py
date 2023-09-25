@@ -128,12 +128,6 @@ if __name__ == "__main__":
 
         response = predict(resp["prompt"].strip())
 
-        heartbeat(
-            URLS["heartbeat"],
-            args.secret,
-            "ready",
-        )
-
         respond(
             URLS["respond"],
             args.secret,
