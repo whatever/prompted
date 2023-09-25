@@ -71,6 +71,7 @@ def respond(url, secret, prompt, response):
         "secret": secret,
         "prompt": prompt,
         "response": response,
+        "state": "ready",
     }
 
     return requests.post(url, data=d)

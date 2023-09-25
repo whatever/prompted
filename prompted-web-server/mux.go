@@ -139,6 +139,12 @@ func NewMux() (*http.ServeMux, error) {
 
 		errmsg := ""
 
+		state := tracker.State
+
+		if req.Form.Has("state") {
+			state = req.Form.Get("state")
+		}
+
 		switch {
 		case !req.Form.Has("prompt"):
 			errmsg = "request is missing prompt parameter"
@@ -158,6 +164,7 @@ func NewMux() (*http.ServeMux, error) {
 			errmsg = "request is not sending the correct secret"
 
 		default:
+			tracker.State = state
 			tracker.Response = req.Form.Get("response")
 			tracker.LastTouched = now
 		}
