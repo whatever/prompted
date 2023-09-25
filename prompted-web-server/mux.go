@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 // NewMux returns a new set of routes
@@ -170,6 +172,33 @@ func NewMux() (*http.ServeMux, error) {
 			State:    tracker.State,
 			Error:    "",
 		})
+	})
+
+	caster := NewBroadcaster()
+
+	upgrader := websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
+
+	mux.HandleFunc("/ws", func(w http.ResponseWriter, req *http.Request) {
+		conn, err := upgrader.Upgrade(w, req, nil)
+
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		message, err := json.Marshal(tracker.StatusMessage())
+
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		conn.WriteMessage(websocket.TextMessage, message)
+
+		caster.Add(conn)
 	})
 
 	mux.Handle("/", http.FileServer(http.FS(fs)))

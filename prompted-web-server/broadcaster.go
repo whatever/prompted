@@ -1,84 +1,79 @@
 package main
 
 import (
-	"fmt"
 	"sync"
 
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 )
 
-const (
-	ReadBuffserSize int = 1024
-)
-
-// Broadcaster that is a hub for all connections
-type Broadcaster struct {
-	Connections map[*websocket.Conn]bool
-	events      chan []byte
-	mutex       sync.RWMutex
+type Event struct {
+	Conn *websocket.Conn
+	Data []byte
 }
 
-// NewBroadcaster returns a new broadcaster
+// BrainBleachSocialConns collects clients and broadcasts messages to clients.
+type Broadcaster struct {
+	Conns  map[*websocket.Conn]bool
+	mutex  sync.Mutex
+	events chan Event
+}
+
+// NewBrainBleachSocialConns returns a new, empty BrainBleachSocialConns obj.
 func NewBroadcaster() *Broadcaster {
 	return &Broadcaster{
-		Connections: make(map[*websocket.Conn]bool),
-		events:      make(chan []byte, 100),
-		mutex:       sync.RWMutex{},
+		Conns:  make(map[*websocket.Conn]bool),
+		mutex:  sync.Mutex{},
+		events: make(chan Event),
 	}
 }
 
-// Add adds a new connection to the broadcaster
-func (caster *Broadcaster) Add(conn *websocket.Conn) error {
+// Add includes a new connection and sets up a go-routine to wait for the
+// connection to close.
+func (conns *Broadcaster) Add(conn *websocket.Conn) {
 
-	if conn == nil {
-		return fmt.Errorf("conn cannot be nil")
-	}
-
-	caster.mutex.Lock()
-	caster.Connections[conn] = true
-	caster.mutex.Unlock()
+	conns.mutex.Lock()
+	conns.Conns[conn] = true
+	conns.mutex.Unlock()
 
 	go func() {
+		defer func() {
+			conns.Remove(conn)
+		}()
 
-		var n int
-		var err error = nil
-		var message []byte
-
-		for err == nil {
-			err = websocket.Message.Receive(conn, &message)
-			fmt.Println("<<<")
-			caster.events <- message[:n]
-			fmt.Println(">>>")
-			fmt.Println("~~~", n, err, message)
+		for {
+			if _, m, err := conn.ReadMessage(); err == nil {
+				conns.events <- Event{conn, m}
+			} else {
+				break
+			}
 		}
 	}()
-
-	return nil
 }
 
-// Broadcast sends messages to all connections
-func (caster *Broadcaster) Broadcast(msg []byte) error {
-	caster.mutex.Lock()
-	defer caster.mutex.Unlock()
+// Remove closes and removes a connection from the Hub.
+func (conns *Broadcaster) Remove(conn *websocket.Conn) {
+	conns.mutex.Lock()
+	defer conns.mutex.Unlock()
+	conn.Close()
+	delete(conns.Conns, conn)
+}
 
-	for conn := range caster.Connections {
-		websocket.Message.Send(conn, msg)
+// Broadcast sends messages to every client.
+func (conns *Broadcaster) Broadcast(message []byte) error {
+	conns.mutex.Lock()
+	defer conns.mutex.Unlock()
+	for conn, _ := range conns.Conns {
+		conn.WriteMessage(websocket.TextMessage, message)
 	}
-
 	return nil
 }
 
-// Remove removes a connection from the broadcaster
-func (caster *Broadcaster) Remove(conn *websocket.Conn) error {
-	delete(caster.Connections, conn)
-	return nil
+// Broadcast sends messages to every client.
+func (conns *Broadcaster) Send(conn *websocket.Conn, message []byte) error {
+	return conn.WriteMessage(websocket.TextMessage, message)
 }
 
-// Close closes a connection
-func (caster *Broadcaster) Close(conn *websocket.Conn) error {
-	return nil
-}
-
-func (caster *Broadcaster) Events() <-chan []byte {
-	return nil
+// Events returns a read-only channel of valid messages sent from connections.
+func (conns *Broadcaster) Events() <-chan Event {
+	return conns.events
 }

@@ -51,6 +51,16 @@ func NewPromptResponseTracker() *PromptResponseTracker {
 	}
 }
 
+// StatusMessage returns a message with the current state/status of the tracker
+func (tracker *PromptResponseTracker) StatusMessage() PromptResponseMessage {
+	return PromptResponseMessage{
+		Prompt:   tracker.Prompt,
+		Response: tracker.Response,
+		State:    tracker.State,
+		Error:    "",
+	}
+}
+
 var port = flag.Int("port", 8182, "set port to listen on")
 
 func main() {

@@ -65,6 +65,23 @@
       window.addEventListener("load", function () {
         document.getElementById("head-like-a-hole").addEventListener("click", prompt);
         setInterval(status, 1000);
+
+
+        var websocket = new WebSocket("ws://localhost:8182/ws");
+
+        websocket.addEventListener("open", function (event) {
+          console.log("open:", event);
+        });
+
+        websocket.addEventListener("message", function (event) {
+          console.log("message:", event);
+        });
+
+        websocket.addEventListener("close", function (event) {
+          console.log("close:", event);
+        });
+
+        console.log(websocket);
       });
 
     </script>
